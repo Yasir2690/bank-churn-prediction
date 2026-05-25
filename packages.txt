@@ -1,2 +1,6 @@
-build-essential
-python3-dev
+
+libjpeg-dev
+zlib1g-dev
+libpng-dev
+libfreetype6-dev
+libwebp-dev
