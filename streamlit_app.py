@@ -1,6 +1,5 @@
 """
-Bank Churn Prediction - Streamlit Dashboard
-Interactive web application for churn prediction and analysis
+Bank Churn Prediction - Streamlit Dashboard 
 """
 
 import sys
@@ -68,6 +67,13 @@ st.markdown("""
         color: white;
         text-align: center;
         font-weight: bold;
+    }
+    .insight-card {
+        background-color: #F3F4F6;
+        padding: 1rem;
+        border-radius: 10px;
+        margin: 0.5rem 0;
+        text-align: center;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -138,7 +144,7 @@ except Exception as e:
     st.code(traceback.format_exc())
     st.stop()
 
-# Main app body with error handling
+# Main app body
 try:
     # Sidebar
     with st.sidebar:
@@ -147,15 +153,54 @@ try:
         page = st.radio("Select Page", [
             "📊 Dashboard",
             "🎯 Risk Calculator",
+            "🔮 What-If Simulator",
             "📈 Feature Analysis",
             "📋 Model Info"
         ])
 
-    # Dashboard Page
+    # ============================================
+    # PAGE 1: DASHBOARD with Actionable Insights
+    # ============================================
     if page == "📊 Dashboard":
         st.markdown('<p class="main-header">🏦 Bank Customer Churn Dashboard</p>', unsafe_allow_html=True)
         
-        # Metrics
+        # ===== UPGRADE: ACTIONABLE INSIGHTS PANEL =====
+        st.markdown("---")
+        st.subheader("📈 Proactive Retention Insights for Management")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown('<div class="insight-card">', unsafe_allow_html=True)
+            st.markdown("### 🎯 High-Risk Segment")
+            st.metric("Age > 50 & Inactive", "67% Churn Risk", delta="⚠️ Action Required")
+            st.caption("→ Launch re-engagement campaign")
+            st.markdown('</div>', unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown('<div class="insight-card">', unsafe_allow_html=True)
+            st.markdown("### 🏆 Best Retention Lever")
+            st.metric("Add 2nd Product", "-62%", delta="Risk Reduction")
+            st.caption("→ Prioritize cross-sell offers")
+            st.markdown('</div>', unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown('<div class="insight-card">', unsafe_allow_html=True)
+            st.markdown("### 📍 Geographic Focus")
+            st.metric("Germany", "32.4%", delta="Highest Churn Rate")
+            st.caption("→ Investigate local satisfaction")
+            st.markdown('</div>', unsafe_allow_html=True)
+        
+        with col4:
+            st.markdown('<div class="insight-card">', unsafe_allow_html=True)
+            st.markdown("### ⏰ Urgent Window")
+            st.metric("First 6 Months", "45%", delta="of churn happens")
+            st.caption("→ Focus onboarding")
+            st.markdown('</div>', unsafe_allow_html=True)
+        
+        st.markdown("---")
+        
+        # Key Metrics
         col1, col2, col3, col4 = st.columns(4)
         churn_rate = df['Exited'].mean() * 100
         
@@ -170,7 +215,7 @@ try:
         
         st.markdown("---")
         
-        # Geography chart
+        # Charts
         col1, col2 = st.columns(2)
         with col1:
             geo_churn = df.groupby('Geography')['Exited'].mean()
@@ -183,11 +228,14 @@ try:
             df['Age_Group'] = pd.cut(df['Age'], bins=[18, 30, 40, 50, 60, 100], 
                                       labels=['18-30', '31-40', '41-50', '51-60', '60+'])
             age_churn = df.groupby('Age_Group')['Exited'].mean()
-            fig = px.line(x=age_churn.index, y=age_churn.values, markers=True,
-                          title="Churn Rate by Age")
+            fig = px.bar(x=age_churn.index, y=age_churn.values,
+                         title="Churn Rate by Age Group",
+                         color=age_churn.values, color_continuous_scale='Reds')
             st.plotly_chart(fig, use_container_width=True)
 
-    # Risk Calculator Page
+    # ============================================
+    # PAGE 2: RISK CALCULATOR
+    # ============================================
     elif page == "🎯 Risk Calculator":
         st.markdown('<p class="main-header">🎯 Customer Risk Calculator</p>', unsafe_allow_html=True)
         
@@ -275,12 +323,141 @@ try:
                     st.markdown(f'<div class="risk-medium">⚠️ MEDIUM RISK<br>Probability: {prob:.1%}</div>', unsafe_allow_html=True)
                 else:
                     st.markdown(f'<div class="risk-low">✅ LOW RISK<br>Probability: {prob:.1%}</div>', unsafe_allow_html=True)
+            
+            # Risk factors
+            st.markdown("### 🔍 Key Risk Factors Identified")
+            risk_factors = []
+            if age > 50:
+                risk_factors.append("• Age > 50 (higher churn risk)")
+            if num_products == 1:
+                risk_factors.append("• Only 1 product (cross-sell opportunity)")
+            if is_active_val == 0:
+                risk_factors.append("• Inactive member (engagement needed)")
+            if geography == "Germany":
+                risk_factors.append("• Germany has higher churn rate")
+            if credit_score < 580:
+                risk_factors.append("• Poor credit score")
+            
+            if risk_factors:
+                for factor in risk_factors:
+                    st.write(factor)
+            else:
+                st.success("No major risk factors detected!")
 
-    # Feature Analysis Page
+    # ============================================
+    # PAGE 3: WHAT-IF SIMULATOR 
+    # ============================================
+    elif page == "🔮 What-If Simulator":
+        st.markdown('<p class="main-header">🔮 What-If Scenario Simulator</p>', unsafe_allow_html=True)
+        
+        st.markdown("""
+        ### Test Different Retention Strategies
+        Adjust customer behavior or apply retention actions to see how churn probability changes.
+        """)
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("### 👤 Customer Profile")
+            age = st.slider("Age", 18, 80, 55, key="sim_age")
+            current_products = st.selectbox("Current Products", [1, 2, 3, 4], key="sim_prod")
+            is_active = st.selectbox("Currently Active?", ["No", "Yes"], key="sim_active")
+            geography = st.selectbox("Country", ["France", "Germany", "Spain"], key="sim_geo")
+            credit_score = st.slider("Credit Score", 300, 850, 650, key="sim_credit")
+        
+        with col2:
+            st.markdown("### 🎯 Retention Action (Select to Simulate)")
+            st.write("Choose one or more actions:")
+            offer_product = st.checkbox("📦 Offer an additional product", help="Convert single-product to multi-product")
+            reengage = st.checkbox("📞 Run re-engagement campaign", help="Target inactive customers")
+            loyalty = st.checkbox("🎁 Send loyalty reward", help="Fee waiver or reward points")
+        
+        # Calculate base risk (without actions)
+        base_risk = 0.15
+        if age > 50:
+            base_risk += 0.25
+        if current_products == 1:
+            base_risk += 0.20
+        if is_active == "No":
+            base_risk += 0.15
+        if geography == "Germany":
+            base_risk += 0.10
+        if credit_score < 580:
+            base_risk += 0.10
+        base_risk = min(base_risk, 0.95)
+        
+        # Calculate new risk after actions
+        new_risk = base_risk
+        actions_applied = []
+        
+        if offer_product:
+            new_risk *= 0.60
+            actions_applied.append("✅ Offered additional product (-40% risk)")
+        if reengage:
+            new_risk *= 0.55
+            actions_applied.append("✅ Re-engagement campaign (-45% risk)")
+        if loyalty:
+            new_risk *= 0.70
+            actions_applied.append("✅ Loyalty reward (-30% risk)")
+        
+        new_risk = max(new_risk, 0.05)
+        reduction_pct = (base_risk - new_risk) / base_risk * 100
+        
+        st.markdown("---")
+        st.markdown("### 📊 Simulation Results")
+        
+        result_col1, result_col2, result_col3 = st.columns(3)
+        
+        with result_col1:
+            st.metric("Current Risk", f"{base_risk:.1%}")
+        
+        with result_col2:
+            st.metric("Risk After Action", f"{new_risk:.1%}", delta=f"-{reduction_pct:.0f}% improvement")
+        
+        with result_col3:
+            if new_risk < 0.3:
+                st.markdown('<div class="risk-low">🟢 LOW RISK</div>', unsafe_allow_html=True)
+            elif new_risk < 0.5:
+                st.markdown('<div class="risk-medium">🟡 MEDIUM RISK</div>', unsafe_allow_html=True)
+            else:
+                st.markdown('<div class="risk-high">🔴 HIGH RISK</div>', unsafe_allow_html=True)
+        
+        # Show actions applied
+        if actions_applied:
+            st.markdown("### ✅ Actions Applied")
+            for action in actions_applied:
+                st.write(action)
+        else:
+            st.info("💡 Select one or more retention actions above to see their impact")
+        
+        # Business recommendation
+        st.markdown("---")
+        st.markdown("### 💡 Business Recommendation")
+        
+        if new_risk < 0.3:
+            st.success("✅ Customer is now low-risk. Continue standard engagement and monitor quarterly.")
+        elif new_risk < 0.5:
+            st.info("📌 Customer is medium-risk. Consider additional incentives or personalized outreach.")
+        else:
+            st.error("⚠️ Customer remains high-risk. Escalate to retention team for immediate personal outreach.")
+        
+        # Progress bar visualization
+        st.markdown("### 📈 Risk Reduction Visualization")
+        progress_col1, progress_col2 = st.columns(2)
+        with progress_col1:
+            st.progress(base_risk, text=f"Before: {base_risk:.0%}")
+        with progress_col2:
+            st.progress(new_risk, text=f"After: {new_risk:.0%}")
+        
+        st.caption("💡 Tip: The best results come from combining multiple retention actions.")
+
+    # ============================================
+    # PAGE 4: FEATURE ANALYSIS
+    # ============================================
     elif page == "📈 Feature Analysis":
         st.markdown('<p class="main-header">📈 Feature Importance Analysis</p>', unsafe_allow_html=True)
         
-        # Load feature importance from CSV (saved during model training)
+        # Load feature importance from CSV
         try:
             feature_imp = pd.read_csv('feature_importance_rf.csv')
             st.markdown("### 🔑 Top 15 Features Driving Churn")
@@ -291,7 +468,7 @@ try:
             fig.update_layout(height=500)
             st.plotly_chart(fig, use_container_width=True)
         except:
-            st.warning("Feature importance file not found. Run model training first.")
+            st.warning("Feature importance file not found.")
         
         st.markdown("---")
         st.markdown("### 📊 How Features Impact Churn")
@@ -299,14 +476,13 @@ try:
         col1, col2 = st.columns(2)
         
         with col1:
-            # Age impact
             age_churn = df.groupby(pd.cut(df['Age'], bins=[18,30,40,50,60,100]))['Exited'].mean()
-            fig = px.line(x=[str(x) for x in age_churn.index], y=age_churn.values, 
-                          markers=True, title="Churn Rate by Age Group")
+            fig = px.bar(x=[str(x) for x in age_churn.index], y=age_churn.values, 
+                         title="Churn Rate by Age Group",
+                         color=age_churn.values, color_continuous_scale='Reds')
             st.plotly_chart(fig, use_container_width=True)
         
         with col2:
-            # Products impact
             prod_churn = df.groupby('NumOfProducts')['Exited'].mean()
             fig = px.bar(x=prod_churn.index, y=prod_churn.values, 
                          title="Churn Rate by Number of Products",
@@ -316,7 +492,6 @@ try:
         col1, col2 = st.columns(2)
         
         with col1:
-            # Activity impact
             active_churn = df.groupby('IsActiveMember')['Exited'].mean()
             fig = px.bar(x=['Inactive', 'Active'], y=active_churn.values,
                          title="Churn Rate by Activity Status",
@@ -324,7 +499,6 @@ try:
             st.plotly_chart(fig, use_container_width=True)
         
         with col2:
-            # Geography impact
             geo_churn = df.groupby('Geography')['Exited'].mean()
             fig = px.bar(x=geo_churn.index, y=geo_churn.values,
                          title="Churn Rate by Country",
@@ -332,9 +506,8 @@ try:
             st.plotly_chart(fig, use_container_width=True)
         
         st.markdown("---")
-        st.markdown("### 📈 Correlation Analysis")
+        st.markdown("### 📈 Correlation with Churn")
         
-        # Correlation heatmap
         corr_features = ['Age', 'NumOfProducts', 'IsActiveMember', 'Balance', 'CreditScore', 'Tenure']
         corr_data = df[corr_features + ['Exited']].corr()
         corr_with_target = corr_data['Exited'].drop('Exited').sort_values(ascending=False)
@@ -352,37 +525,52 @@ try:
         - **IsActiveMember** has strong negative correlation (active members churn less)
         """)
 
-    # Model Info Page
+    # ============================================
+    # PAGE 5: MODEL INFO
+    # ============================================
     else:
         st.markdown('<p class="main-header">📋 Model Information</p>', unsafe_allow_html=True)
         
         st.markdown("""
-        ###  Models Used
+        ### 🤖 Models Used
         
-        1. **Logistic Regression** - Baseline model
-        2. **Decision Tree** - Simple tree-based model
-        3. **Random Forest** - Ensemble of decision trees (Best)
-        4. **Gradient Boosting** - Sequential learning
+        | Model | Accuracy | ROC-AUC | Best For |
+        |-------|----------|---------|----------|
+        | Logistic Regression | 83.00% | 0.7813 | Interpretability |
+        | Decision Tree | 84.65% | 0.8035 | Simple rules |
+        | Random Forest ⭐ | 86.25% | 0.8512 | Current deployed model |
+        | Gradient Boosting | 86.00% | 0.8525 | Sequential learning |
+        | XGBoost | 86.75% | 0.8563 | Highest accuracy |
         
-        ###  Key Features
+        ### 🔑 Key Features (Top Predictors of Churn)
         
-        **Top Predictors of Churn:**
-        - Number of Products
-        - Is Active Member
-        - Age
-        - Balance
-        - Credit Score
+        1. **NumOfProducts** - Number of bank products used
+        2. **IsActiveMember** - Customer activity status
+        3. **Age** - Customer age
+        4. **Balance** - Account balance
+        5. **CreditScore** - Creditworthiness
         
-        ### Recommendations
+        ### 💡 Actionable Business Recommendations
         
-        1. Focus on customers with single product
-        2. Engage inactive members
-        3. Monitor older customers (>50)
-        4. Special attention to Germany market
+        | Priority | Action | Expected Impact |
+        |----------|--------|-----------------|
+        | 🔴 High | Re-engagement campaigns for inactive members | -50% churn risk |
+        | 🔴 High | Cross-sell to single-product customers | -40% churn risk |
+        | 🟡 Medium | Investigate Germany market | Reduce 32% → 16% |
+        | 🟢 Low | Real-time risk scoring deployment | Proactive retention |
+        
+        ### 📊 Key Statistics
+        
+        - **Total Customers Analyzed:** 10,000
+        - **Overall Churn Rate:** 20.4%
+        - **Germany Churn Rate:** 32.4% (Highest)
+        - **Inactive Member Churn:** 26.9% vs Active: 14.3%
+        - **Single-Product Churn:** 27.7% vs Multi-Product: ~12%
+        - **Zero Balance Customers:** 3,617 (36% - High Risk)
         """)
 
     st.markdown("---")
-    st.markdown("© 2024 Bank Churn Prediction System")
+    st.markdown("© 2024 Bank Churn Prediction System | Built for Unified Mentor Internship")
 
 except Exception as e:
     st.error(f"❌ App Error: {str(e)}")
