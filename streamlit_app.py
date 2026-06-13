@@ -83,7 +83,7 @@ try:
     # Load data
     @st.cache_data
     def load_data():
-        df = pd.read_csv('data/European_Bank.csv')
+        df = pd.read_csv('European_Bank.csv')
         return df
 
     # Train model
